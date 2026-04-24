@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import RecipePage from "./pages/RecipePage";
 import ApiGuidePage from "./pages/ApiGuidePage";
+import MealPlannerPage from "./pages/MealPlannerPage";
 import "./App.css";
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/recette/:id" element={<RecipePage />} />
           <Route path="/guide-api" element={<ApiGuidePage />} />
+          <Route path="/planificateur" element={<MealPlannerPage />} />
         </Routes>
       </main>
       <footer className="footer">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Plug, ShoppingBag } from "lucide-react";
+import { BookOpen, Plug, ShoppingBag, CalendarDays } from "lucide-react";
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -28,6 +28,13 @@ export default function Navbar() {
           >
             <Plug size={16} />
             Guide APIs
+          </Link>
+          <Link
+            to="/planificateur"
+            className={`nav-link ${pathname === "/planificateur" ? "active" : ""}`}
+          >
+            <CalendarDays size={16} />
+            Planning
           </Link>
           <a
             href="https://www.instagram.com/souka_yanel/"

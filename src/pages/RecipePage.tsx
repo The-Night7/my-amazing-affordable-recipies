@@ -118,10 +118,13 @@ export default function RecipePage() {
             href={recipe.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="source-link"
+            className={`video-link-btn ${
+              recipe.source_platform === "instagram" ? "insta" :
+              recipe.source_platform === "threads" ? "threads" : ""
+            }`}
           >
             <ExternalLink size={14} />
-            Voir sur {platformIcon[recipe.source_platform]}
+            Voir la vidéo sur {platformIcon[recipe.source_platform]}
           </a>
         </div>
       </div>
