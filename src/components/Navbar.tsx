@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Plug, ShoppingBag, CalendarDays } from "lucide-react";
+import { BookOpen, Plug, ShoppingBag, CalendarDays, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
@@ -47,6 +47,17 @@ export default function Navbar() {
             <ShoppingBag size={16} />
             Instagram
           </a>
+          {user ? (
+            <button onClick={logout} className="nav-link">
+              <User size={16} />
+              Déconnexion
+            </button>
+          ) : (
+            <Link to="/auth" className="nav-link">
+              <User size={16} />
+              Compte
+            </Link>
+          )}
         </div>
       </div>
     </nav>
