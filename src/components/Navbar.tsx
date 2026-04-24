@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { BookOpen, Plug, ShoppingBag, CalendarDays } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const { pathname } = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <nav className="navbar">
