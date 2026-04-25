@@ -680,7 +680,7 @@ const recipes: Recipe[] = [
     video_embed_url: "null",
     source_platform: "maman",
     date_published: "2026-04-25",
-    caption_original: "Ingrédients : -Riz Basmatti -copeaux de légumes/oignons séchés -huile d'olive",
+    caption_original: "Ingrédients : -Riz Basmatti -copeaux de légumes/oignons séchés -huile d'olive -cube de bouillon de boeuf/poulet",
     thumbnail: "🍚",
     serves: 6,
     prep_time_minutes: 20,
@@ -690,6 +690,7 @@ const recipes: Recipe[] = [
       { id: "riz-basmatti-1", name: "Riz Basmatti", quantity: 500, unit: "g", notes: null, searchTerms: ["riz basmatti"] },
       { id: "copeaux-legumes-1", name: "Copeaux de légumes/oignons séchés", quantity: null, unit: "à goût", notes: null, searchTerms: ["legumes seches", "oignons seches"] },
       { id: "huile-olive-1", name: "Huile d'olive", quantity: 2, unit: "cas", notes: null, searchTerms: ["huile olive"] },
+      { id: "cube-bouillon-1", name: "Cube de bouillon de bœuf/poulet", quantity: 0.5, unit: "cube", notes: null, searchTerms: ["bouillon", "cube bouillon"] },
     ],
     instructions: [
       "Faire bouillir de l'eau et poser une casserole sur une plaque allumée (niveau 4 ou 5).",
