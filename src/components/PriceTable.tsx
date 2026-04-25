@@ -97,9 +97,10 @@ export function PriceTable({
           {Array.from(priceResults.entries()).map(([ingredientName, result]) => {
             const entries = getEntriesFromResult(result);
 
-            const filteredEntries = entries.filter((entry) =>
-              matchesSelectedMarket(entry, selectedMarkets)
-            );
+            const filteredEntries = entries
+              .filter((entry) => isValidPriceEntry(entry))
+              .filter((entry) => matchesIngredient(entry, ingredientName))
+              .filter((entry) => matchesSelectedMarket(entry, selectedMarkets));
 
             return (
               <div key={ingredientName} className="price-table__ingredient">
@@ -201,7 +202,20 @@ function getProductName(entry: DisplayPriceEntry): string {
 }
 
 function getStoreName(entry: DisplayPriceEntry): string {
-  return entry.store || entry.brand || entry.location || "Magasin inconnu";
+  const rawStore = entry.store || entry.brand || entry.location || "";
+
+  const normalized = normalizeName(rawStore);
+
+  if (
+    !rawStore ||
+    normalized === "france" ||
+    normalized === "fr" ||
+    normalized === "unknown"
+  ) {
+    return "Open Prices";
+  }
+
+  return rawStore;
 }
 
 function getQuantity(entry: DisplayPriceEntry): string {
@@ -209,9 +223,56 @@ function getQuantity(entry: DisplayPriceEntry): string {
 }
 
 function formatPrice(entry: DisplayPriceEntry): string {
-  if (typeof entry.price !== "number") {
+  if (typeof entry.price !== "number" || entry.price <= 0.05) {
     return "-";
   }
 
-  return `${entry.price.toFixed(2)} ${entry.currency || "€"}`;
+  const currency = entry.currency || "EUR";
+  return `${entry.price.toFixed(2)} ${currency}`;
+}
+
+function isValidPriceEntry(entry: DisplayPriceEntry): boolean {
+  if (typeof entry.price !== "number") {
+    return false;
+  }
+
+  if (entry.price <= 0.05) {
+    return false;
+  }
+
+  if (entry.currency && entry.currency.toUpperCase() !== "EUR") {
+    return false;
+  }
+
+  const productName = getProductName(entry);
+
+  if (!productName || productName === "Produit alimentaire") {
+    return false;
+  }
+
+  return true;
+}
+
+function matchesIngredient(
+  entry: DisplayPriceEntry,
+  ingredientName: string
+): boolean {
+  const productName = normalizeName(getProductName(entry));
+  const ingredient = normalizeName(ingredientName);
+
+  if (!productName || !ingredient) {
+    return false;
+  }
+
+  const ingredientWords = ingredient
+    .split(/(?=[a-z0-9])/)
+    .join(" ")
+    .split(" ")
+    .filter((word) => word.length >= 3);
+
+  if (ingredientWords.length === 0) {
+    return productName.includes(ingredient);
+  }
+
+  return ingredientWords.some((word) => productName.includes(word));
 }

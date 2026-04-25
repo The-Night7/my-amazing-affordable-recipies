@@ -43,20 +43,34 @@ export function useNearbyMarkets(): UseNearbyMarketsResult {
           node["shop"~"supermarket|convenience|greengrocer|butcher|bakery|marketplace"](around:${radiusMeters},${latitude},${longitude});
           way["shop"~"supermarket|convenience|greengrocer|butcher|bakery|marketplace"](around:${radiusMeters},${latitude},${longitude});
           relation["shop"~"supermarket|convenience|greengrocer|butcher|bakery|marketplace"](around:${radiusMeters},${latitude},${longitude});
+          node["amenity"="marketplace"](around:${radiusMeters},${latitude},${longitude});
+          way["amenity"="marketplace"](around:${radiusMeters},${latitude},${longitude});
+          relation["amenity"="marketplace"](around:${radiusMeters},${latitude},${longitude});
         );
         out center tags;
       `;
 
-      const response = await fetch(
-        `/api/markets/nearby?lat=${latitude}&lng=${longitude}&radius=5000`
-        );
+      const response = await fetch("https://overpass-api.de/api/interpreter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=UTF-8",
+        },
+        body: query,
+      });
 
+      const text = await response.text();
 
       if (!response.ok) {
         throw new Error("Impossible de récupérer les marchés proches.");
       }
 
-      const data = await response.json();
+      if (text.trim().startsWith("<")) {
+        throw new Error(
+          "L'API a renvoyé du HTML au lieu du JSON. Vérifie l'URL appelée."
+        );
+      }
+
+      const data = JSON.parse(text);
 
       const parsedMarkets: Market[] = data.elements
         .map((item: any) => {
@@ -68,8 +82,11 @@ export function useNearbyMarkets(): UseNearbyMarketsResult {
           }
 
           const tags = item.tags ?? {};
-          const name = tags.name || tags.brand || "Commerce alimentaire";
 
+          const name =
+            tags.name ||
+            tags.brand ||
+            getDefaultMarketName(tags.shop, tags.amenity);
           const addressParts = [
             tags["addr:housenumber"],
             tags["addr:street"],
@@ -77,15 +94,15 @@ export function useNearbyMarkets(): UseNearbyMarketsResult {
           ].filter(Boolean);
 
           return {
-            id: String(item.id),
+            id: `${item.type}-${item.id}`,
             name,
             brand: tags.brand,
-            type: tags.shop || "market",
+            type: tags.shop || tags.amenity || "market",
             latitude: lat,
             longitude: lon,
             address: addressParts.join(" "),
             distanceKm: getDistanceKm(latitude, longitude, lat, lon),
-          };
+          } satisfies Market;
         })
         .filter(Boolean)
         .sort((a: Market, b: Market) => {
@@ -117,7 +134,9 @@ export function useNearbyMarkets(): UseNearbyMarketsResult {
 function getCurrentPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error("La géolocalisation n'est pas disponible sur ce navigateur."));
+      reject(
+        new Error("La géolocalisation n'est pas disponible sur ce navigateur.")
+      );
       return;
     }
 
@@ -127,4 +146,27 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
       maximumAge: 60000,
     });
   });
+}
+
+function getDefaultMarketName(shop?: string, amenity?: string): string {
+  if (amenity === "marketplace") {
+    return "Marché";
+  }
+
+  switch (shop) {
+    case "supermarket":
+      return "Supermarché";
+    case "convenience":
+      return "Épicerie";
+    case "greengrocer":
+      return "Primeur";
+    case "butcher":
+      return "Boucherie";
+    case "bakery":
+      return "Boulangerie";
+    case "marketplace":
+      return "Marché";
+    default:
+      return "Commerce alimentaire";
+  }
 }
