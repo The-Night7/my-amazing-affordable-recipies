@@ -12,8 +12,11 @@ import {
   Circle,
 } from "lucide-react";
 import recipes from "../data/recipes";
-import PriceTable from "../components/PriceTable";
+import { PriceTable } from "../components/PriceTable";
 import { useRecipePrices } from "../hooks/useOpenPrices";
+import { MarketSelector } from "../components/MarketSelector";
+import type { PriceResult } from "../hooks/useOpenPrices";
+import type { Market } from "../types/market";
 
 const platformIcon: Record<string, string> = {
   instagram: "📸 Instagram",
@@ -27,6 +30,7 @@ export default function RecipePage() {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [priceFetched, setPriceFetched] = useState(false);
+  const [selectedMarkets, setSelectedMarkets] = useState<Market[]>([]);
 
   // Préparer les termes de recherche uniques
   const searchTerms = recipe
@@ -241,11 +245,17 @@ export default function RecipePage() {
             .
           </p>
         </div>
+        <MarketSelector
+          selectedMarkets={selectedMarkets}
+          onChange={setSelectedMarkets}
+        />
+        
         <PriceTable
           priceResults={priceResults}
           loadingAll={loadingAll}
           onFetch={handleFetchPrices}
           fetched={priceFetched}
+          selectedMarkets={selectedMarkets}
         />
       </div>
 
