@@ -264,15 +264,16 @@ function matchesIngredient(
     return false;
   }
 
-  const ingredientWords = ingredient
-    .split(/(?=[a-z0-9])/)
-    .join(" ")
-    .split(" ")
-    .filter((word) => word.length >= 3);
+  if (productName.includes(ingredient)) {
+    return true;
+  }
+  const words = ingredient
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length >= 4);
 
-  if (ingredientWords.length === 0) {
-    return productName.includes(ingredient);
+  if (words.length === 0) {
+    return false;
   }
 
-  return ingredientWords.some((word) => productName.includes(word));
+  return words.every((word) => productName.includes(word));
 }
