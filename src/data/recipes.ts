@@ -14,7 +14,7 @@ export interface Recipe {
   tags: string[];
   source_url: string;          // lien vers le post/reel original
   video_embed_url: string | null; // URL directe pour embed/ouvrir la vidéo
-  source_platform: "instagram" | "tiktok" | "threads";
+  source_platform: "instagram" | "tiktok" | "threads" | "youtube" | "twitter" | "reddit" | "facebook" | "maman";
   date_published: string;
   caption_original: string;
   thumbnail: string;
@@ -668,6 +668,36 @@ const recipes: Recipe[] = [
       "Mélanger tous les ingrédients jusqu'à obtenir une pâte homogène.",
       "Former des petites boules ou des biscuits et disposer sur une plaque.",
       "Enfourner 12-15 min à 170°C jusqu'à légère coloration.",
+    ],
+    macros: null,
+  },
+  {
+    id: "riz-bazmatti",
+    title: "Riz Basmatti Maison",
+    category: "plat",
+    tags: ["healthy", "riz"],
+    source_url: "null",
+    video_embed_url: "null",
+    source_platform: "maman",
+    date_published: "2026-04-25",
+    caption_original: "Ingrédients : -Riz Basmatti -copeaux de légumes/oignons séchés -huile d'olive",
+    thumbnail: "🍚",
+    serves: 6,
+    prep_time_minutes: 20,
+    cook_method: "Casserole",
+    calories_total: null,
+    ingredients: [
+      { id: "riz-basmatti-1", name: "Riz Basmatti", quantity: 500, unit: "g", notes: null, searchTerms: ["riz basmatti"] },
+      { id: "copeaux-legumes-1", name: "Copeaux de légumes/oignons séchés", quantity: null, unit: "à goût", notes: null, searchTerms: ["legumes seches", "oignons seches"] },
+      { id: "huile-olive-1", name: "Huile d'olive", quantity: 2, unit: "cas", notes: null, searchTerms: ["huile olive"] },
+    ],
+    instructions: [
+      "Faire bouillir de l'eau dans une casserole à feu vif (niveau 5).",
+      "Ajouter l'huile d'olive et les copeaux de légumes/oignons séchés.",
+      "Ajouter le riz (1/2 à 2 doses selon besoin).",
+      "Une fois l'eau bouillante, ajouter le double de la quantité de riz en eau.",
+      "Ajouter un demi-cube de bouillon de poulet ou bœuf.",
+      "Couvrir et laisser cuire à feu doux jusqu'à absorption complète.",
     ],
     macros: null,
   },
