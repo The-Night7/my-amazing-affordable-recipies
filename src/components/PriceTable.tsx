@@ -1,3 +1,10 @@
+import {
+  AlertCircle,
+  RefreshCw,
+  ShoppingCart,
+  Store,
+  TrendingDown,
+} from "lucide-react";
 import type { Market } from "../types/market";
 import type { PriceEntry, PriceResult } from "../hooks/useOpenPrices";
 
@@ -17,6 +24,7 @@ type DisplayPriceEntry = PriceEntry & {
   store?: string;
   brand?: string;
   location?: string;
+  source?: string;
 };
 
 type FlexiblePriceResult = PriceResult & {
@@ -24,14 +32,6 @@ type FlexiblePriceResult = PriceResult & {
   prices?: DisplayPriceEntry[];
   results?: DisplayPriceEntry[];
 };
-
-function normalizeName(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9]/g, "");
-}
 
 const STORE_COLORS: Record<string, string> = {
   "E.Leclerc": "#0066CC",
@@ -42,24 +42,10 @@ const STORE_COLORS: Record<string, string> = {
   Monoprix: "#E31E24",
   Casino: "#FFCC00",
   "Super U": "#E30613",
+  Marjane: "#E30613",
+  BIM: "#E31E24",
+  "Open Prices": "#6B7280",
 };
-
-function StoreTag({ name }: { name: string }) {
-  const color = STORE_COLORS[name] || "#6B7280";
-
-  return (
-    <span
-      className="store-tag"
-      style={{
-        backgroundColor: color + "18",
-        color,
-        border: `1px solid ${color}40`,
-      }}
-    >
-      {name}
-    </span>
-  );
-}
 
 export function PriceTable({
   priceResults,
@@ -68,82 +54,267 @@ export function PriceTable({
   fetched,
   selectedMarkets,
 }: PriceTableProps) {
-  return (
-    <section className="price-table">
-      <div className="price-table__header">
-        <div>
-          <h2>Comparateur de prix</h2>
+  const totalIngredients = priceResults.size;
+  const selectedMarketCount = selectedMarkets.length;
 
-          {selectedMarkets.length > 0 ? (
-            <p>Prix filtrés selon les marchés sélectionnés autour de toi.</p>
-          ) : (
-            <p>Sélectionne des marchés proches pour cibler la comparaison.</p>
-          )}
+  return (
+    <section className="price-comparator">
+      <div className="price-comparator__hero">
+        <div className="price-comparator__icon">
+          <ShoppingCart size={24} />
         </div>
 
-        <button type="button" onClick={onFetch} disabled={loadingAll}>
-          {loadingAll ? "Recherche..." : "Comparer les prix"}
+        <div className="price-comparator__intro">
+          <p className="eyebrow">Comparateur de prix</p>
+          <h2>Prix des ingrédients</h2>
+
+          <p>
+            Compare les prix disponibles pour les ingrédients de cette recette.
+            Les données Open Prices sont indicatives et peuvent ne pas être
+            reliées à une enseigne précise.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onFetch}
+          disabled={loadingAll}
+          className="price-comparator__button"
+        >
+          {loadingAll ? (
+            <>
+              <RefreshCw size={18} className="spin" />
+              Recherche...
+            </>
+          ) : (
+            <>
+              <TrendingDown size={18} />
+              Comparer les prix
+            </>
+          )}
         </button>
       </div>
 
-      {!fetched && <p>Lance une recherche pour afficher les prix disponibles.</p>}
+      <div className="price-comparator__stats">
+        <div className="price-stat">
+          <span>{selectedMarketCount}</span>
+          <small>
+            marché{selectedMarketCount > 1 ? "s" : ""} sélectionné
+            {selectedMarketCount > 1 ? "s" : ""}
+          </small>
+        </div>
 
-      {fetched && priceResults.size === 0 && (
-        <p>Aucun prix trouvé pour cette recette.</p>
+        <div className="price-stat">
+          <span>{totalIngredients}</span>
+          <small>
+            ingrédient{totalIngredients > 1 ? "s" : ""} recherché
+            {totalIngredients > 1 ? "s" : ""}
+          </small>
+        </div>
+
+        <div className="price-stat price-stat--soft">
+          <span>Open Prices</span>
+          <small>source indicative</small>
+        </div>
+      </div>
+
+      {selectedMarkets.length > 0 && (
+        <div className="price-comparator__notice">
+          <AlertCircle size={18} />
+          <p>
+            Les marchés proches servent à affiner la comparaison quand les
+            données le permettent. Si aucun prix exact n'est trouvé, l'app
+            affiche des prix indicatifs disponibles.
+          </p>
+        </div>
       )}
 
-      {fetched && priceResults.size > 0 && (
-        <div className="price-table__content">
+      {!fetched && !loadingAll && (
+        <div className="price-empty-state">
+          <div className="price-empty-state__icon">
+            <Store size={28} />
+          </div>
+
+          <h3>Aucune recherche lancée</h3>
+          <p>
+            Clique sur "Comparer les prix" pour récupérer les prix disponibles
+            pour les ingrédients de cette recette.
+          </p>
+        </div>
+      )}
+
+      {loadingAll && (
+        <div className="price-loading">
+          <RefreshCw size={24} className="spin" />
+          <p>Recherche des meilleurs prix disponibles...</p>
+        </div>
+      )}
+
+      {fetched && priceResults.size === 0 && !loadingAll && (
+        <div className="price-empty-state">
+          <div className="price-empty-state__icon price-empty-state__icon--warning">
+            <AlertCircle size={28} />
+          </div>
+
+          <h3>Aucun prix trouvé</h3>
+          <p>
+            Les données disponibles ne contiennent pas encore de prix exploitable
+            pour cette recette.
+          </p>
+        </div>
+      )}
+
+      {fetched && priceResults.size > 0 && !loadingAll && (
+        <div className="price-comparator__list">
           {Array.from(priceResults.entries()).map(([ingredientName, result]) => {
             const entries = getEntriesFromResult(result);
 
-            const filteredEntries = entries
+            const validEntries = entries
               .filter((entry) => isValidPriceEntry(entry))
               .filter((entry) => matchesIngredient(entry, ingredientName))
-              .filter((entry) => matchesSelectedMarket(entry, selectedMarkets));
+              .sort((a, b) => getPriceValue(a) - getPriceValue(b));
 
+            const marketEntries = validEntries.filter((entry) =>
+              matchesSelectedMarket(entry, selectedMarkets)
+            );
+
+            const hasSelectedMarkets = selectedMarkets.length > 0;
+            const hasMarketMatches = marketEntries.length > 0;
+
+            const entriesToDisplay =
+              hasSelectedMarkets && hasMarketMatches
+                ? marketEntries.slice(0, 8)
+                : validEntries.slice(0, 8);
+
+            const isFallback =
+              hasSelectedMarkets && !hasMarketMatches && validEntries.length > 0;
+
+            const bestPrice = entriesToDisplay[0];
             return (
-              <div key={ingredientName} className="price-table__ingredient">
-                <h3>{ingredientName}</h3>
+              <article
+                key={ingredientName}
+                className="price-ingredient-card"
+              >
+                <header className="price-ingredient-card__header">
+                  <div>
+                    <p className="eyebrow">Ingrédient</p>
+                    <h3>{ingredientName}</h3>
+                  </div>
 
-                {filteredEntries.length === 0 ? (
-                  <p>Aucun prix trouvé dans les marchés sélectionnés.</p>
-                ) : (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produit</th>
-                        <th>Magasin</th>
-                        <th>Quantité</th>
-                        <th>Prix</th>
-                      </tr>
-                    </thead>
+                  {bestPrice && (
+                    <div className="best-price-pill">
+                      <span>Meilleur prix</span>
+                      <strong>{formatPrice(bestPrice)}</strong>
+                    </div>
+                  )}
+                </header>
 
-                    <tbody>
-                      {filteredEntries.map((entry, index) => {
-                        const storeName = getStoreName(entry);
-
-                        return (
-                          <tr key={`${ingredientName}-${index}`}>
-                            <td>{getProductName(entry)}</td>
-                            <td>
-                              <StoreTag name={storeName} />
-                            </td>
-                            <td>{getQuantity(entry)}</td>
-                            <td>{formatPrice(entry)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                {isFallback && (
+                  <div className="price-fallback">
+                    <AlertCircle size={17} />
+                    <p>
+                      Aucun prix exact trouvé dans les marchés sélectionnés.
+                      Affichage des prix indicatifs disponibles via Open Prices.
+                    </p>
+                  </div>
                 )}
-              </div>
+
+                {entriesToDisplay.length === 0 ? (
+                  <div className="price-row-empty">
+                    Aucun prix exploitable trouvé pour cet ingrédient.
+                  </div>
+                ) : (
+                  <div className="price-table-wrapper">
+                    <table className="price-table-modern">
+                      <thead>
+                        <tr>
+                          <th>Produit</th>
+                          <th>Source</th>
+                          <th>Quantité</th>
+                          <th>Prix</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {entriesToDisplay.map((entry, index) => {
+                          const storeName = getStoreName(entry);
+                          const isBestPrice = index === 0;
+                          return (
+                            <tr
+                              key={`${ingredientName}-${index}`}
+                              className={isBestPrice ? "is-best-price" : ""}
+                            >
+                              <td>
+                                <div className="product-cell">
+                                  <strong>{getProductName(entry)}</strong>
+
+                                  {isBestPrice && (
+                                    <span className="best-label">
+                                      Prix le plus bas
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td>
+                                <StoreTag name={storeName} />
+                              </td>
+
+                              <td>{getQuantity(entry)}</td>
+
+                              <td>
+                                <strong className="price-value">
+                                  {formatPrice(entry)}
+                                </strong>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </article>
             );
           })}
         </div>
       )}
     </section>
   );
+}
+
+function StoreTag({ name }: { name: string }) {
+  const color = getStoreColor(name);
+
+  return (
+    <span
+      className="store-tag"
+      style={{
+        backgroundColor: `${color}18`,
+        color,
+        border: `1px solid ${color}35`,
+      }}
+    >
+      {name}
+    </span>
+  );
+}
+function getStoreColor(name: string): string {
+  const directColor = STORE_COLORS[name];
+
+  if (directColor) {
+    return directColor;
+  }
+  const normalized = normalizeName(name);
+
+  if (normalized.includes("carrefour")) return STORE_COLORS.Carrefour;
+  if (normalized.includes("lidl")) return STORE_COLORS.Lidl;
+  if (normalized.includes("aldi")) return STORE_COLORS.Aldi;
+  if (normalized.includes("bim")) return STORE_COLORS.BIM;
+  if (normalized.includes("marjane")) return STORE_COLORS.Marjane;
+  if (normalized.includes("leclerc")) return STORE_COLORS["E.Leclerc"];
+
+  return "#6B7280";
 }
 
 function getEntriesFromResult(result: PriceResult): DisplayPriceEntry[] {
@@ -177,7 +348,7 @@ function matchesSelectedMarket(
   );
 
   const priceStoreName = normalizeName(
-    price.store || price.brand || price.location || ""
+    price.store || price.brand || price.location || price.source || ""
   );
 
   if (!priceStoreName) {
@@ -190,45 +361,6 @@ function matchesSelectedMarket(
       selectedName.includes(priceStoreName)
     );
   });
-}
-
-function getProductName(entry: DisplayPriceEntry): string {
-  return (
-    entry.productName ||
-    entry.product_name ||
-    entry.product ||
-    "Produit alimentaire"
-  );
-}
-
-function getStoreName(entry: DisplayPriceEntry): string {
-  const rawStore = entry.store || entry.brand || entry.location || "";
-
-  const normalized = normalizeName(rawStore);
-
-  if (
-    !rawStore ||
-    normalized === "france" ||
-    normalized === "fr" ||
-    normalized === "unknown"
-  ) {
-    return "Open Prices";
-  }
-
-  return rawStore;
-}
-
-function getQuantity(entry: DisplayPriceEntry): string {
-  return entry.quantity || "-";
-}
-
-function formatPrice(entry: DisplayPriceEntry): string {
-  if (typeof entry.price !== "number" || entry.price <= 0.05) {
-    return "-";
-  }
-
-  const currency = entry.currency || "EUR";
-  return `${entry.price.toFixed(2)} ${currency}`;
 }
 
 function isValidPriceEntry(entry: DisplayPriceEntry): boolean {
@@ -267,6 +399,7 @@ function matchesIngredient(
   if (productName.includes(ingredient)) {
     return true;
   }
+
   const words = ingredient
     .split(/[^a-z0-9]+/)
     .filter((word) => word.length >= 4);
@@ -275,5 +408,55 @@ function matchesIngredient(
     return false;
   }
 
-  return words.every((word) => productName.includes(word));
+  return words.some((word) => productName.includes(word));
+}
+
+function getProductName(entry: DisplayPriceEntry): string {
+  return (
+    entry.productName ||
+    entry.product_name ||
+    entry.product ||
+    "Produit alimentaire"
+  );
+}
+
+function getStoreName(entry: DisplayPriceEntry): string {
+  const rawStore = entry.store || entry.brand || entry.location || entry.source || "";
+  const normalized = normalizeName(rawStore);
+
+  if (
+    !rawStore ||
+    normalized === "france" ||
+    normalized === "fr" ||
+    normalized === "unknown" ||
+    normalized === "inconnu"
+  ) {
+    return "Open Prices";
+  }
+
+  return rawStore;
+}
+
+function getQuantity(entry: DisplayPriceEntry): string {
+  return entry.quantity || "-";
+}
+
+function getPriceValue(entry: DisplayPriceEntry): number {
+  return typeof entry.price === "number" ? entry.price : Number.POSITIVE_INFINITY;
+}
+
+function formatPrice(entry: DisplayPriceEntry): string {
+  if (typeof entry.price !== "number" || entry.price <= 0.05) {
+    return "-";
+  }
+
+  return `${entry.price.toFixed(2)} ${entry.currency || "EUR"}`;
+}
+
+function normalizeName(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]/g, "");
 }
