@@ -37,7 +37,7 @@ export default function HomePage() {
       <div className="hero">
         <div className="hero-content">
           <div className="hero-avatar">👩‍🍳</div>
-          <h1 className="hero-title">Recettes de Soukaina</h1>
+          <h1 className="hero-title">Some amazing affordable recipies</h1>
           <p className="hero-subtitle">
             Toutes les recettes{" "}
             <strong>healthy &amp; perte de poids</strong> de{" "}

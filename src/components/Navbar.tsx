@@ -12,7 +12,7 @@ export default function Navbar() {
         <Link to="/" className="navbar-brand">
           <span className="brand-emoji">🥗</span>
           <div>
-            <span className="brand-name">Recettes Souka</span>
+            <span className="brand-name">Some amazing affordable recipies</span>
             <span className="brand-sub">@souka_yanel</span>
           </div>
         </Link>

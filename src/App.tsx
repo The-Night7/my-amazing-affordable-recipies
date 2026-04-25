@@ -22,7 +22,7 @@ export default function App() {
       </main>
       <footer className="footer">
         <p>
-          Recettes de{" "}
+          Some amazing affordable recipies
           <a
             href="https://www.instagram.com/souka_yanel/"
             target="_blank"
