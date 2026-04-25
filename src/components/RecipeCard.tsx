@@ -28,6 +28,11 @@ const platformIcon: Record<Recipe["source_platform"], string> = {
   instagram: "📸",
   tiktok: "🎵",
   threads: "🧵",
+  youtube: "📺",
+  twitter: "🐦",
+  reddit: "👾",
+  facebook: "📘",
+  maman: "👩‍🍳", // Émoji ajouté pour votre recette de Riz Basmatti
 };
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
